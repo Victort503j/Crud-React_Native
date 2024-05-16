@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, Text, View, TouchableOpacity, ActivityIndicator, Button, TextInput } from 'react-native';
+import { Text, View, TouchableOpacity, TextInput } from 'react-native';
 import { Card } from '@rneui/themed';
 import { Modal } from 'react-native';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
@@ -8,21 +8,23 @@ import styles from '../Styles/styles';
 import CreateRol from './CreateRol';
 import UpdateRol from "./UpdateRol";
 import { ScrollView } from 'react-native-gesture-handler';
-// import Pagination from '../pagination/Pagination';
+import Pagination from '../pagination/Pagination';
 
 function ListRol() {
     const [searchTerm, setSearchTerm] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
-    const { roles, OnGetRoles, OnDelete, pagination_roles } = useRolesStore();
+    const { roles = [], OnGetRoles, OnDelete, pagination_roles } = useRolesStore(); // Initialize roles to an empty array
     const [modalVisible, setModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null);
     const [rolId, setRolId] = useState(0);
 
+    const [currentPage, setCurrentPage] = useState(1);
+
     useEffect(() => {
-        OnGetRoles(1, 5, "");
-    }, []);
+        OnGetRoles(currentPage, 5, searchQuery);
+    }, [currentPage, searchQuery]);
 
     const toggleModal = () => {
         setModalVisible(!modalVisible);
@@ -42,7 +44,7 @@ function ListRol() {
     };
 
     const handleSearch = () => {
-        setSearchQuery(searchTerm);
+        setSearchQuery(searchTerm.toLowerCase());
         setSearchTerm("");
     };
 
@@ -53,12 +55,12 @@ function ListRol() {
         }
     };
 
-    const filteredRoles = roles.filter((r) =>
-        r.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredRoles = roles ? roles.filter((r) =>
+        r.name.toLowerCase().includes(searchQuery)
+    ) : [];
 
     const handleChangePage = (page: number) => {
-        OnGetRoles(page, 5, "");
+        setCurrentPage(page);
     }
 
     return (
@@ -70,6 +72,7 @@ function ListRol() {
                         placeholder="Buscar..."
                         value={searchTerm}
                         onChangeText={handleSearchChange}
+                        onSubmitEditing={handleSearch}
                     />
                     <TouchableOpacity
                         style={{ backgroundColor: '#00ABED', borderRadius: 5, padding: 10 }}
@@ -78,38 +81,42 @@ function ListRol() {
                         <Text style={{ color: 'white', fontWeight: 'bold', marginTop: 2 }}>Buscar</Text>
                     </TouchableOpacity>
                 </View>
-                {filteredRoles.map((rol) => (
-                    <Card key={rol.id} containerStyle={styles.card}>
-                        <View>
-                            <Text>Nombre: {rol.name}</Text>
-                            <View style={styles.buttonContainer}>
-                                <TouchableOpacity
-                                    style={styles.button}
-                                    onPress={() => {
-                                        setRolId(rol.id);
-                                        toggleEditModal();
-                                    }}
-                                >
-                                    <FontAwesome name="pencil" size={18} color="white" />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={styles.buttonDelete}
-                                    onPress={() => toggleDeleteModal(rol.id)}
-                                >
-                                    <MaterialIcons name="delete-forever" size={18} color="white" />
-                                </TouchableOpacity>
+                {filteredRoles.length === 0 ? (
+                    <Text style={{ textAlign: 'center', marginTop: 20, fontSize: 16 }}>
+                        No se encontró ningún registro
+                    </Text>
+                ) : (
+                    filteredRoles.map((rol) => (
+                        <Card key={rol.id} containerStyle={styles.card}>
+                            <View>
+                                <Text>Nombre: {rol.name}</Text>
+                                <View style={styles.buttonContainer}>
+                                    <TouchableOpacity
+                                        style={styles.button}
+                                        onPress={() => {
+                                            setRolId(rol.id);
+                                            toggleEditModal();
+                                        }}
+                                    >
+                                        <FontAwesome name="pencil" size={18} color="white" />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={styles.buttonDelete}
+                                        onPress={() => toggleDeleteModal(rol.id)}
+                                    >
+                                        <MaterialIcons name="delete-forever" size={18} color="white" />
+                                    </TouchableOpacity>
+                                </View>
                             </View>
-                        </View>
-                    </Card>
-                ))}
-                <View >
-                    {/* <Pagination
-                        showShadow
-                        showControls
-                        page={pagination_roles.currentPag}
-                        total={pagination_roles.totalPag}
-                        onChange={handleChangePage}
-                    /> */}
+                        </Card>
+                    ))
+                )}
+                <View>
+                    <Pagination
+                        totalPages={pagination_roles.totalPag}
+                        currentPage={pagination_roles.currentPag}
+                        onPageChange={handleChangePage}
+                    />
                 </View>
             </ScrollView>
 
@@ -185,7 +192,7 @@ function ListRol() {
             <TouchableOpacity
                 style={{
                     position: 'absolute',
-                    bottom: 40,
+                    bottom: 100,
                     right: 30,
                     backgroundColor: '#1A8F13',
                     borderRadius: 50,

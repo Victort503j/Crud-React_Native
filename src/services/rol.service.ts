@@ -8,11 +8,14 @@ import {
 import { API_URL } from "../utils/constant";
 
 export const get_roles = async (page: number, limit: number, name: string) => {
-  return axios.get<IGetRolesPaginated>(API_URL + `/roles`, {
-    // headers: {
-    // Authorization: "Bearer " + localStorage.getItem("token"),
-    // },
-  });
+  return axios.get<IGetRolesPaginated>(
+    API_URL + `/roles?page=${page}&limit=${limit}&name=${name}`,
+    {
+      // headers: {
+      // Authorization: "Bearer " + localStorage.getItem("token"),
+      // },
+    }
+  );
 };
 
 export const delete_rol = (id: number) => {
