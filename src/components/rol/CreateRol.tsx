@@ -19,10 +19,10 @@ const CreateRol = ({ onCloseModal }: { onCloseModal: () => void }) => {
     return (
         <>
             <TextInput
-                placeholder='    Nombre del rol'
+                placeholder='Nombre del rol'
                 value={name}
                 onChangeText={setName}
-                style={{ height: 40, padding: 12, width: 250, borderColor: '#00abed', borderWidth: 2, borderRadius: 5, marginTop: 20, margin: 20 }}
+                style={{ height: 40, padding: 11, width: 250, borderColor: '#00abed', borderWidth: 2, borderRadius: 5, marginTop: 20, margin: 20 }}
             />
             <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-around', marginTop: 10 }}>
                 <TouchableOpacity
